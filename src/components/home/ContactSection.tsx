@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, type FormEvent, type ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Instagram, Clock, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-// import { base44 } from '@/api/base44Client';
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -15,18 +14,24 @@ export default function ContactSection() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    formData.append("access_key", "19a145bf-af84-43f5-9937-d81c747a9217");
+
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: formData
+    });
     
-/*     await base44.integrations.Core.SendEmail({
-      to: 'stanzias@gmail.com',
-      subject: `Nueva consulta de ${formData.name}`,
-      body: `Nombre: ${formData.name}\nEmail: ${formData.email}\n\nMensaje:\n${formData.message}`
-    }); */
+    const data = await response.json();
     
-    toast.success('¡Consulta enviada! Te responderemos pronto.');
-    setFormData({ name: '', email: '', message: '' });
+    if (data.success) { 
+      toast.success('¡Consulta enviada! Te responderemos pronto.');
+      setFormData({ name: '', email: '', message: '' });
+    }
     setIsSubmitting(false);
     
     // Scroll to top of page
@@ -67,28 +72,31 @@ export default function ContactSection() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <Input
+                    name="name"
                     placeholder="Nombre completo"
                     value={formData.name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, name: e.target.value})}
                     className="rounded-xl border-gray-200 focus:border-[#7C9885] focus:ring-[#7C9885]"
                     required
                   />
                 </div>
                 <div>
                   <Input
+                    name="email"
                     type="email"
                     placeholder="Email"
                     value={formData.email}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, email: e.target.value})}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({...formData, email: e.target.value})}
                     className="rounded-xl border-gray-200 focus:border-[#7C9885] focus:ring-[#7C9885]"
                     required
                   />
                 </div>
                 <div>
                   <Textarea
+                    name="message"
                     placeholder="Tu consulta"
                     value={formData.message}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, message: e.target.value})}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, message: e.target.value})}
                     className="rounded-xl border-gray-200 focus:border-[#7C9885] focus:ring-[#7C9885] min-h-[120px]"
                     required
                   />
